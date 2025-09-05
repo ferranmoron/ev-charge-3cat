@@ -119,10 +119,10 @@ export const AdminLogin = ({ onLogin, getDefaultCredentials }: AdminLoginProps) 
           
           <div className="mt-4 space-y-3">
             <div className="p-3 bg-blue-50 rounded-lg text-sm text-blue-700">
-              <p className="font-medium">Administrador per Defecte:</p>
+              {/* <p className="font-medium">Administrador per Defecte:</p>
               <p className="text-xs">Usuari: {defaultCreds.email}</p>
-              <p className="text-xs">Contrasenya: {defaultCreds.password}</p>
-              <Button 
+              <p className="text-xs">Contrasenya: {defaultCreds.password}</p> */}
+              {/* <Button 
                 onClick={fillDefaultCredentials}
                 variant="ghost" 
                 size="sm" 
@@ -130,7 +130,7 @@ export const AdminLogin = ({ onLogin, getDefaultCredentials }: AdminLoginProps) 
                 disabled={isLoading}
               >
                 Emplenar credencials per defecte
-              </Button>
+              </Button> */}
             </div>
             
             <div className="p-3 bg-yellow-50 rounded-lg text-sm text-yellow-700">
