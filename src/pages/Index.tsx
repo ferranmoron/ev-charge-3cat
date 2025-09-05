@@ -58,6 +58,7 @@ export default function Index() {
         updateUserChargingPoint,
         getCurrentUser,
         getOnlineUsers,
+        isValidUser,
     } = useSupabaseUsers();
 
     const [selectedPointId, setSelectedPointId] = useState<
@@ -117,6 +118,13 @@ export default function Index() {
 
     const handleEmailSubmit = async (email: string, name: string) => {
         if (email && email.includes("@") && name) {
+            // Verificar si l'usuari existeix a ev_users
+            const isValid = await isValidUser(email);
+            if (!isValid) {
+                toast.error("Aquest correu no està autoritzat per accedir al sistema");
+                return;
+            }
+
             const userId = await addOrUpdateUser(name, email);
             if (userId) {
                 toast.success(`Benvingut, ${name}!`);

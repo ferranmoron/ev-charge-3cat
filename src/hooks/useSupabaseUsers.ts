@@ -38,6 +38,16 @@ export const useSupabaseUsers = () => {
     }
   };
 
+  const isValidUser = async (email: string): Promise<boolean> => {
+        const { data, error } = await supabase
+            .from('ev_users')
+            .select('email')
+            .eq('email', email)
+            .single();
+        
+        return !!data && !error;
+    };
+
   useEffect(() => {
     loadUsers();
 
@@ -189,6 +199,7 @@ export const useSupabaseUsers = () => {
     updateUserChargingPoint,
     removeUser,
     getCurrentUser,
-    getOnlineUsers
+    getOnlineUsers,
+    isValidUser
   };
 };
