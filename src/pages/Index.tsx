@@ -330,7 +330,7 @@ export default function Index() {
                 </div>
 
                 <Tabs defaultValue="charging-points" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-6">
+                    <TabsList className="grid w-full grid-cols-2" >
                         <TabsTrigger
                             value="charging-points"
                             className="flex items-center gap-2"
@@ -350,7 +350,7 @@ export default function Index() {
                             className="flex items-center gap-2"
                         >
                             <User className="h-4 w-4" />
-                            Unir-se a la Cua
+                            Endollar / Cua
                         </TabsTrigger>
                         <TabsTrigger
                             value="queue"
