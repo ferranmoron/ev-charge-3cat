@@ -13,6 +13,7 @@ interface ChargingPointGridProps {
   selectedPointId?: number;
   isUserView?: boolean;
   isAdmin: boolean;
+  currentUserEmail?: string;  // Afegim aquesta prop
 }
 
 export const ChargingPointGrid = ({ 
@@ -22,7 +23,8 @@ export const ChargingPointGrid = ({
   onToggleMaintenance,
   selectedPointId,
   isUserView = false,
-  isAdmin
+  isAdmin,
+  currentUserEmail
 }: ChargingPointGridProps) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -33,11 +35,15 @@ export const ChargingPointGrid = ({
     }
   };
 
+  const canEndSession = (point: ChargingPointType) => {
+        return isAdmin || (point.currentUser?.email === currentUserEmail);
+    };
+
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'available': return 'Available';
-      case 'in-use': return 'In Use';
-      case 'maintenance': return 'Maintenance';
+      case 'available': return 'Disponible';
+      case 'in-use': return 'Ocupat';
+      case 'maintenance': return 'Manteniment';
       default: return 'Unknown';
     }
   };
@@ -108,7 +114,7 @@ export const ChargingPointGrid = ({
                 <div className="text-xs text-muted-foreground">
                   {getRemainingTime(point)}
                 </div>
-                {isAdmin && (
+                {canEndSession && (
                   <Button 
                     onClick={(e) => {
                       e.stopPropagation();
