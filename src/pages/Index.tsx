@@ -338,13 +338,13 @@ export default function Index() {
                             <Zap className="h-4 w-4" />
                             Punts de Càrrega
                         </TabsTrigger>
-                        <TabsTrigger
+                        {isAdmin && (<TabsTrigger
                             value="users"
                             className="flex items-center gap-2"
                         >
                             <Users className="h-4 w-4" />
                             Usuaris ({onlineUsers.length})
-                        </TabsTrigger>
+                        </TabsTrigger>)}
                         <TabsTrigger
                             value="user-form"
                             className="flex items-center gap-2"
@@ -369,19 +369,20 @@ export default function Index() {
                             <Settings className="h-4 w-4" />
                             Admin
                         </TabsTrigger>
-                        <TabsTrigger
-                            value="settings"
-                            className="flex items-center gap-2"
-                            disabled={!isLoggedIn}
-                        >
-                            <Shield className="h-4 w-4" />
-                            Configuració
-                        </TabsTrigger>
+                        {isAdmin && (
+                            <TabsTrigger
+                                value="settings"
+                                className="flex items-center gap-2"
+                            >
+                                <Shield className="h-4 w-4" />
+                                Configuració
+                            </TabsTrigger>
+                        )}
                     </TabsList>
 
                     {/* Charging Points Tab - Everyone can view */}
-                    <TabsContent value="charging-points" className="space-y-6">
-                        <Card>
+                    <TabsContent value="charging-points" className="space-y-6 mt-10">
+                        <Card className="mt-10">
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Zap className="h-5 w-5" />
@@ -406,6 +407,8 @@ export default function Index() {
                                     selectedPointId={selectedPointId}
                                     isUserView={true}
                                     isAdmin={isAdmin}
+                                    currentUserEmail={currentUserData?.email}
+                                    
                                 />
                                 {selectedPointId && (
                                     <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
