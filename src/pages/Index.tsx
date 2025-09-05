@@ -127,8 +127,23 @@ export default function Index() {
 
             const userId = await addOrUpdateUser(name, email);
             if (userId) {
-                toast.success(`Benvingut, ${name}!`);
+            // Afegim l'usuari a la llista d'espera automàticament
+            const addedToWaitingList = await handleAddToWaitingList(name, email);
+            
+            if (addedToWaitingList) {
+                toast.success(`Benvingut ${name}! S'ha afegit a la llista d'espera`);
+            } else {
+                toast.success(`Benvingut ${name}!`);
+                toast.error("No s'ha pogut afegir a la llista d'espera");
             }
+
+            // Canviem automàticament a la pestanya de la llista d'espera
+            const tabsList = document.querySelector('[role="tablist"]');
+            const queueTab = tabsList?.querySelector('[value="queue"]') as HTMLButtonElement;
+            if (queueTab) {
+                queueTab.click();
+            }
+        }
         }
     };
 
@@ -197,11 +212,11 @@ export default function Index() {
                             <Zap className="h-8 w-8 text-white" />
                         </div>
                         <h1 className="text-4xl font-bold text-gray-900">
-                            Estació de Càrrega VE
+                            Punts de càrrega EV - 3Cat
                         </h1>
                     </div>
                     <div className="flex items-center justify-center gap-4 text-lg text-gray-600 flex-wrap">
-                        <span>Sistema Multiusuari amb Supabase</span>
+                        <span>Sistema Multiusuari</span>
                         <Badge
                             variant="outline"
                             className="flex items-center gap-1"
@@ -221,6 +236,7 @@ export default function Index() {
                     {/* User Status */}
                     <div className="mt-4 flex items-center justify-center gap-4 flex-wrap">
                         {currentUserData && (
+                            <>
                             <Badge
                                 variant="secondary"
                                 className="flex items-center gap-1"
@@ -228,6 +244,15 @@ export default function Index() {
                                 <User className="h-3 w-3" />
                                 Usuari Actual: {currentUserData.name}
                             </Badge>
+                            <Button
+                                    onClick={logout}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    <LogOut className="h-4 w-4 mr-1" />
+                                    Sortir
+                            </Button>
+                            </>
                         )}
                         {onlineUsers.length > 0 && (
                             <Badge
@@ -263,7 +288,7 @@ export default function Index() {
                                 <CardHeader>
                                     <CardTitle className="text-lg flex items-center gap-2">
                                         <User className="h-5 w-5" />
-                                        Identifiqui's per utilitzar el sistema
+                                        Inicia sessió
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -275,7 +300,7 @@ export default function Index() {
                                             <Input
                                                 id="userName"
                                                 type="text"
-                                                placeholder="El seu nom complet"
+                                                placeholder="Nom cognom"
                                             />
                                         </div>
                                         <div className="space-y-2">
@@ -285,7 +310,7 @@ export default function Index() {
                                             <Input
                                                 id="userEmail"
                                                 type="email"
-                                                placeholder="el.seu.correu@example.com"
+                                                placeholder="el.meu.correu@3cat.cat"
                                             />
                                         </div>
                                         <Button
@@ -316,7 +341,7 @@ export default function Index() {
                                                         emailInput.value = "";
                                                     } else {
                                                         toast.error(
-                                                            "Si us plau, introdueixi nom i correu vàlids"
+                                                            "Si us plau, introdueix nom i correu vàlids"
                                                         );
                                                     }
                                                 }
@@ -326,7 +351,7 @@ export default function Index() {
                                             Registrar-se
                                         </Button>
                                         <p className="text-xs text-muted-foreground">
-                                            Això li permet gestionar la seva
+                                            Això et permet gestionar la teva
                                             posició a la cua d'espera i veure
                                             altres usuaris
                                         </p>
