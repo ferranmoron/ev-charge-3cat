@@ -4,6 +4,24 @@ import { User } from '@/types';
 import { toast } from 'sonner';
 
 const HEARTBEAT_INTERVAL = 30000; // 30 seconds
+const CHARGING_POINT_COORDS = {
+  latitude: 41.3746438,
+  longitude: 2.0674218
+};
+const MAX_DISTANCE_KM = 15;
+
+// Funció per calcular distàncies
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Radi de la Terra en km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c; // Distància en km
+};
 
 export const useSupabaseUsers = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -104,6 +122,34 @@ export const useSupabaseUsers = () => {
 
   const addOrUpdateUser = async (name: string, email: string): Promise<string> => {
     try {
+      // Verificar si el navegador suporta geolocalització
+      if (!navigator.geolocation) {
+        toast.error('El seu navegador no suporta geolocalització');
+        return '';
+      }
+
+      // Obtenir la ubicació actual
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+      });
+
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      // Calcular distància al punt de càrrega
+      const distance = calculateDistance(
+        userLat,
+        userLon,
+        CHARGING_POINT_COORDS.latitude,
+        CHARGING_POINT_COORDS.longitude
+      );
+
+      // Verificar si està dins del radi permès
+      if (distance > MAX_DISTANCE_KM) {
+        toast.error(`Has d'estar a menys de ${MAX_DISTANCE_KM}km del punt de càrrega`);
+        return '';
+      }
+
       const now = new Date().toISOString();
       
       const { data, error } = await supabase
@@ -113,7 +159,9 @@ export const useSupabaseUsers = () => {
           name,
           is_online: true,
           last_seen: now,
-          updated_at: now
+          updated_at: now,
+          latitude: userLat,
+          longitude: userLon
         }, {
           onConflict: 'email'
         })
@@ -125,8 +173,22 @@ export const useSupabaseUsers = () => {
       setCurrentUserId(data.id);
       return data.id;
     } catch (error) {
-      console.error('Error adding/updating user:', error);
-      toast.error('Error registrant usuari');
+      if (error instanceof GeolocationPositionError) {
+        switch(error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Has de permetre l\'accés a la teva ubicació');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('No es pot determinar la teva ubicació');
+            break;
+          case error.TIMEOUT:
+            toast.error('Temps d\'espera esgotat obtenint la ubicació');
+            break;
+        }
+      } else {
+        console.error('Error adding/updating user:', error);
+        toast.error('Error registrant usuari');
+      }
       return '';
     }
   };
