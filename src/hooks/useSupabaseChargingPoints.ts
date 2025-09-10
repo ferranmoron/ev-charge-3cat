@@ -1,12 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChargingPoint, WaitingListEntry, AppSettings } from '@/types';
 import { toast } from 'sonner';
+import { useNotifications } from './useNotifications';
 
 export const useSupabaseChargingPoints = (settings: AppSettings, isAdmin: boolean, currentUserEmail?: string) => {
   const [chargingPoints, setChargingPoints] = useState<ChargingPoint[]>([]);
   const [waitingList, setWaitingList] = useState<WaitingListEntry[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const { notifyChargingTimeExceeded } = useNotifications();
 
   // Load charging points
   const loadChargingPoints = async () => {
@@ -176,6 +179,36 @@ export const useSupabaseChargingPoints = (settings: AppSettings, isAdmin: boolea
       return false;
     }
   };
+
+  const checkChargingTimes = useCallback(() => {
+    chargingPoints.forEach(point => {
+      if (
+        point.status === 'in-use' && 
+        point.startTime && 
+        point.currentUser &&
+        point.currentUser.email === currentUserEmail
+      ) {
+        const startTime = new Date(point.startTime).getTime();
+        const currentTime = new Date().getTime();
+        const elapsedHours = (currentTime - startTime) / (1000 * 60 * 60);
+
+        if (elapsedHours >= settings.maxChargingHours) {
+          notifyChargingTimeExceeded(
+            point.currentUser.name,
+            point.id,
+            elapsedHours // Passem el valor exacte
+            // Math.round(elapsedHours)
+          );
+        }
+      }
+    });
+  }, [chargingPoints, settings.maxChargingHours, currentUserEmail, notifyChargingTimeExceeded]);
+
+  // Comprova cada 5 minuts
+  useEffect(() => {
+    const interval = setInterval(checkChargingTimes, 300000);
+    return () => clearInterval(interval);
+  }, [checkChargingTimes]);
 
   const endSession = async (pointId: number): Promise<boolean> => {
     try {

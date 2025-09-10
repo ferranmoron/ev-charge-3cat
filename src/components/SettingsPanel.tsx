@@ -22,7 +22,7 @@ export const SettingsPanel = ({
   const [maxHours, setMaxHours] = useState(settings.maxChargingHours.toString());
 
   const handleUpdateMaxHours = () => {
-    const hours = parseInt(maxHours);
+    const hours = parseFloat(maxHours);
     if (isNaN(hours) || hours <= 0 || hours > 24) {
       toast.error('Please enter a valid number between 1 and 24');
       return;
@@ -56,7 +56,8 @@ export const SettingsPanel = ({
               <Input
                 id="maxHours"
                 type="number"
-                min="1"
+                min="0.1"
+                step="0.25"
                 max="24"
                 value={maxHours}
                 onChange={(e) => setMaxHours(e.target.value)}
